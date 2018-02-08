@@ -73,7 +73,7 @@ def align_faces(image_name, shapepredictor):
     #     # print datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
     #
     image = cv2.imread(image_name)
-    win = dlib.image_window()
+    # win = dlib.image_window()
     predictor = dlib.shape_predictor(shapepredictor)
     fa = FaceAligner(predictor, desiredFaceWidth=256)
     # cnn_face_detector = dlib.cnn_face_detection_model_v1("./models/mmod_human_face_detector.dat")
@@ -84,7 +84,7 @@ def align_faces(image_name, shapepredictor):
     # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     # image_RGB = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     if image.shape[0] < 800 and image.shape[1] < 800:
-        cnn_face_detector = dlib.cnn_face_detection_model_v1("./models/mmod_human_face_detector.dat")
+        cnn_face_detector = dlib.cnn_face_detection_model_v1(sys.path[0]+"/models/mmod_human_face_detector.dat")
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         dets = cnn_face_detector(gray, 1)
         rects = dlib.rectangles()
@@ -104,10 +104,10 @@ def align_faces(image_name, shapepredictor):
 
         # show the original input image and detect faces in the grayscale
         rects = detector(gray, 2)
-    win.clear_overlay()
-    win.set_image(image_RGB)
-    win.add_overlay(rects)
-    dlib.hit_enter_to_continue()
+    # win.clear_overlay()
+    # win.set_image(image_RGB)
+    # win.add_overlay(rects)
+    # dlib.hit_enter_to_continue()
 
     if len(rects) == 0:
         print ("No face is deteced")
@@ -122,9 +122,9 @@ def align_faces(image_name, shapepredictor):
         #(x, y, w, h) = rect_to_bb(rect)
         #faceOrig = imutils.resize(image[y:y + h, x:x + w], width=256)
         faceAligned = fa.align(image, gray, rect)
-        rootdir = './aligned_face'
+        rootdir = sys.path[0]+'/aligned_face'
         list = os.listdir(rootdir)
-        facesavename_tmp = './aligned_face/' + str(len(list)).zfill(5)+'.jpg'
+        facesavename_tmp = sys.path[0]+'/aligned_face/' + str(len(list)).zfill(5)+'.jpg'
         facesavename.append(facesavename_tmp)
         cv2.imwrite(facesavename_tmp, faceAligned)
         cnt = cnt + 1
@@ -146,10 +146,10 @@ def face_validation(facesavename_tmp):
     # predictor = dlib.shape_predictor("./models/shape_predictor_68_face_landmarks.dat")
     #
     # shape = predictor(unknown_image, rect)
-    win = dlib.image_window()
-    win.clear_overlay()
-    win.set_image(unknown_image)
-    dlib.hit_enter_to_continue()
+    # win = dlib.image_window()
+    # win.clear_overlay()
+    # win.set_image(unknown_image)
+    # dlib.hit_enter_to_continue()
     face_locations =  face_recognition.face_locations(unknown_image)
     if face_locations == None:
         face_locations = face_recognition.face_locations(unknown_image, model="cnn")
@@ -171,10 +171,10 @@ def face_validation(facesavename_tmp):
     if not True in results:
         print("We have never seen such face before.")
         unknown_face_name = raw_input('Please input the name of the face:')
-        np.save('./face_code/'+str(len(known_faces)+1).zfill(5)+'.npy', unknown_face_encoding)
+        np.save(sys.path[0]+'/face_code/'+str(len(known_faces)+1).zfill(5)+'.npy', unknown_face_encoding)
         known_faces.append(unknown_face_encoding)
         face_name.append(unknown_face_name)
-        with open('./face_inf/'+str(len(known_faces)).zfill(5)+'.json', 'w') as json_obj:
+        with open(sys.path[0]+'/face_inf/'+str(len(known_faces)).zfill(5)+'.json', 'w') as json_obj:
             # face_dict_new = dict(zip(face_name, known_faces))
             # j = json.dumps(face_dict_new)
             json.dump({"name": unknown_face_name}, json_obj)
@@ -183,7 +183,8 @@ def face_validation(facesavename_tmp):
         print("The man(woman) in the picture is {}".format(facecompre_name))
     return facecompre_name
 
-def detect(url, shapepredictor):
+def detect(url, shapepredictor = sys.path[0]+'/models/shape_predictor_68_face_landmarks.dat'):
+    _init_()
     print('detect start=%s' % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
     # Detect all object classes and regress object bounds
     print('file=' + url)
@@ -195,8 +196,8 @@ def detect(url, shapepredictor):
 
     # face vaildation
     for faceavename_tmp in facesavename:
-        face_validation(faceavename_tmp)
-
+        facecompre_name = face_validation(faceavename_tmp)
+    return facecompre_name
     # arr.append({'file': url, 'faces': item})
     # print arr
     # return arr
@@ -208,8 +209,8 @@ def parse_args():
     parser.add_argument('--prefix', help='saved model prefix', default='model/age', type=str)
     parser.add_argument('--epoch', help='epoch of pretrained model', default=10, type=int)
     parser.add_argument('--gpu', help='GPU device to use', default=1, type=int)
-    parser.add_argument('--imagefile', help='input image', default='bald_guys.jpg', type=str)
-    parser.add_argument('--shapepredictor', help='input shape-predictor', default='./models/shape_predictor_68_face_landmarks.dat', type=str)
+    parser.add_argument('--imagefile', help='input image', default=sys.path[0]+'/bald_guys.jpg', type=str)
+    parser.add_argument('--shapepredictor', help='input shape-predictor', default=sys.path[0]+'/models/shape_predictor_68_face_landmarks.dat', type=str)
     args = parser.parse_args()
     return args
 
@@ -223,14 +224,16 @@ def init_csv2list(fileName="", dataList=[], splitsymbol=","):
         csvFile.close()
 
 def _init_(fileName = ''):
-    rootdir = './face_code'
+    rootdir = sys.path[0]
+    rootdir += '/face_code'
     list = os.listdir(rootdir)
     for i in range(0, len(list)):
         filepath = os.path.join(rootdir, str(i+1).zfill(5)+'.npy')
         if os.path.isfile(filepath):
             new_face = np.load(filepath)
             known_faces.append(new_face)
-    rootdir = './face_inf'
+    rootdir = sys.path[0]
+    rootdir += '/face_inf'
     list = os.listdir(rootdir)
     for i in range(0, len(list)):
         filepath = os.path.join(rootdir, str(i+1).zfill(5)+'.json')
@@ -261,7 +264,6 @@ def _init_(fileName = ''):
 def main():
     # init_csv2list('face_name.csv', face_name)
     # init_csv2list('known_faces.csv', known_faces)
-    _init_('face_inf.json')
     args = parse_args()
     detect(args.imagefile, args.shapepredictor)
     # save_face_inf('face_inf.json')

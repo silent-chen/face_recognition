@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>您的照片已经在人脸库中，您确定要将其强制添加进人脸库吗</h1>
+    <form id="form1" method="POST" action="/api/force_upload" enctype="multipart/form-data">
+        <input type="file" name="file"/>
+	<br><br>
+	<input type="text" name="username" placeholder="your name"/>
+    	<input type="submit" value="确定"/>
+    </form>
+</body>
+</html>
+

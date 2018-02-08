@@ -2,17 +2,10 @@ import argparse
 import os
 import cv2
 import numpy as np
-import shutil
-from collections import namedtuple
 import datetime
-import matplotlib.pyplot as plt
-import sys
 import json
-from tempfile import TemporaryFile
-import base64
 import face_recognition
 from imutils.face_utils import FaceAligner
-from imutils.face_utils import rect_to_bb
 from PIL import Image
 import argparse
 import imutils
@@ -196,14 +189,16 @@ def init_csv2list(fileName="", dataList=[], splitsymbol=","):
         csvFile.close()
 
 def _init_(fileName = ''):
-    rootdir = './face_code'
+    rootdir = os.getcwd()
+    rootdir += '/feace_code'
     list = os.listdir(rootdir)
     for i in range(0, len(list)):
         filepath = os.path.join(rootdir, str(i+1).zfill(5)+'.npy')
         if os.path.isfile(filepath):
             new_face = np.load(filepath)
             known_faces.append(new_face)
-    rootdir = './face_inf'
+    rootdir = os.getcwd()
+    rootdir += './face_inf'
     list = os.listdir(rootdir)
     for i in range(0, len(list)):
         filepath = os.path.join(rootdir, str(i+1).zfill(5)+'.json')
